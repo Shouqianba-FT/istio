@@ -24,7 +24,6 @@ import (
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	v32 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	internalupstream "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/internal_upstream/v3"
 	rawbuffer "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/raw_buffer/v3"
@@ -32,7 +31,6 @@ import (
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	metadata "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
-	v33 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	xdstype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	anypb "github.com/golang/protobuf/ptypes/any"
 	"google.golang.org/protobuf/proto"
@@ -815,7 +813,7 @@ func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.Lo
 	if loadbalancer.GetWarmupDurationSecs() != nil {
 		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
 			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
-				SlowStartConfig: setSlowStartConfigV2(loadbalancer),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
@@ -828,13 +826,14 @@ func applyLeastRequestLoadBalancer(c *cluster.Cluster, loadbalancer *networking.
 	if loadbalancer.GetWarmupDurationSecs() != nil {
 		c.LbConfig = &cluster.Cluster_LeastRequestLbConfig_{
 			LeastRequestLbConfig: &cluster.Cluster_LeastRequestLbConfig{
-				SlowStartConfig: setSlowStartConfigV2(loadbalancer),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
 }
 
-func setSlowStartConfigV2(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
+// setSlowStartConfig will set the warmupDurationSecs for LEAST_REQUEST and ROUND_ROBIN if provided in DestinationRule
+func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
 	slowStartConfig := &cluster.Cluster_SlowStartConfig{
 		SlowStartWindow: loadbalancer.GetWarmupDurationSecs(),
 	}
@@ -842,25 +841,18 @@ func setSlowStartConfigV2(loadbalancer *networking.LoadBalancerSettings) *cluste
 	if aggressionStr := loadbalancer.GetAggression(); aggressionStr != "" {
 		aggressionValue, err := strconv.ParseFloat(aggressionStr, 64)
 		if err == nil {
-			slowStartConfig.Aggression = &v32.RuntimeDouble{
+			slowStartConfig.Aggression = &core.RuntimeDouble{
 				DefaultValue: aggressionValue,
 				RuntimeKey:   "istio.slowstart.aggression",
 			}
 		}
 	}
 	if minWeightPercent := loadbalancer.GetMinWeightPercent(); minWeightPercent != 0 {
-		slowStartConfig.MinWeightPercent = &v33.Percent{
+		slowStartConfig.MinWeightPercent = &xdstype.Percent{
 			Value: float64(loadbalancer.GetMinWeightPercent()),
 		}
 	}
 	return slowStartConfig
-}
-
-// setSlowStartConfig will set the warmupDurationSecs for LEAST_REQUEST and ROUND_ROBIN if provided in DestinationRule
-func setSlowStartConfig(dur *durationpb.Duration) *cluster.Cluster_SlowStartConfig {
-	return &cluster.Cluster_SlowStartConfig{
-		SlowStartWindow: dur,
-	}
 }
 
 // ApplyRingHashLoadBalancer will set the LbPolicy and create an LbConfig for RING_HASH if  used in LoadBalancerSettings
