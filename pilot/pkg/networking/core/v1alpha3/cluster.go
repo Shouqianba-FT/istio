@@ -863,7 +863,7 @@ func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.Lo
 	if loadbalancer.GetWarmupDurationSecs() != nil {
 		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
 			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
-				SlowStartConfig: setSlowStartConfig(loadbalancer.GetWarmupDurationSecs()),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
@@ -876,17 +876,33 @@ func applyLeastRequestLoadBalancer(c *cluster.Cluster, loadbalancer *networking.
 	if loadbalancer.GetWarmupDurationSecs() != nil {
 		c.LbConfig = &cluster.Cluster_LeastRequestLbConfig_{
 			LeastRequestLbConfig: &cluster.Cluster_LeastRequestLbConfig{
-				SlowStartConfig: setSlowStartConfig(loadbalancer.GetWarmupDurationSecs()),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
 }
 
 // setSlowStartConfig will set the warmupDurationSecs for LEAST_REQUEST and ROUND_ROBIN if provided in DestinationRule
-func setSlowStartConfig(dur *durationpb.Duration) *cluster.Cluster_SlowStartConfig {
-	return &cluster.Cluster_SlowStartConfig{
-		SlowStartWindow: dur,
+func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
+	slowStartConfig := &cluster.Cluster_SlowStartConfig{
+		SlowStartWindow: loadbalancer.GetWarmupDurationSecs(),
 	}
+
+	if aggressionStr := loadbalancer.GetSqbAggression(); aggressionStr != "" {
+		aggressionValue, err := strconv.ParseFloat(aggressionStr, 64)
+		if err == nil {
+			slowStartConfig.Aggression = &core.RuntimeDouble{
+				DefaultValue: aggressionValue,
+				RuntimeKey:   "istio.slowstart.aggression",
+			}
+		}
+	}
+	if minWeightPercent := loadbalancer.GetSqbMinWeightPercent(); minWeightPercent != 0 {
+		slowStartConfig.MinWeightPercent = &xdstype.Percent{
+			Value: float64(loadbalancer.GetSqbMinWeightPercent()),
+		}
+	}
+	return slowStartConfig
 }
 
 // ApplyRingHashLoadBalancer will set the LbPolicy and create an LbConfig for RING_HASH if  used in LoadBalancerSettings
