@@ -838,7 +838,7 @@ func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.
 		SlowStartWindow: loadbalancer.GetWarmupDurationSecs(),
 	}
 
-	if aggressionStr := loadbalancer.GetAggression(); aggressionStr != "" {
+	if aggressionStr := loadbalancer.GetSqbAggression(); aggressionStr != "" {
 		aggressionValue, err := strconv.ParseFloat(aggressionStr, 64)
 		if err == nil {
 			slowStartConfig.Aggression = &core.RuntimeDouble{
@@ -847,9 +847,9 @@ func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.
 			}
 		}
 	}
-	if minWeightPercent := loadbalancer.GetMinWeightPercent(); minWeightPercent != 0 {
+	if minWeightPercent := loadbalancer.GetSqbMinWeightPercent(); minWeightPercent != 0 {
 		slowStartConfig.MinWeightPercent = &xdstype.Percent{
-			Value: float64(loadbalancer.GetMinWeightPercent()),
+			Value: float64(loadbalancer.GetSqbMinWeightPercent()),
 		}
 	}
 	return slowStartConfig

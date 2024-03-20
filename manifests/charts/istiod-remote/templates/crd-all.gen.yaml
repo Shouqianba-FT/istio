@@ -360,10 +360,6 @@ spec:
                             required:
                             - consistentHash
                           properties:
-                            aggression:
-                              description: The aggression factor for traffic increase
-                                during slow start.
-                              type: string
                             consistentHash:
                               properties:
                                 httpCookie:
@@ -453,10 +449,6 @@ spec:
                                     type: string
                                   type: array
                               type: object
-                            minWeightPercent:
-                              description: The minimum percentage of traffic to send
-                                to new endpoints during slow start.
-                              type: integer
                             simple:
                               enum:
                               - UNSPECIFIED
@@ -466,6 +458,14 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            sqbAggression:
+                              description: The aggression factor for traffic increase
+                                during slow start.
+                              type: string
+                            sqbMinWeightPercent:
+                              description: The minimum percentage of traffic to send
+                                to new endpoints during slow start.
+                              type: integer
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -664,10 +664,6 @@ spec:
                                   required:
                                   - consistentHash
                                 properties:
-                                  aggression:
-                                    description: The aggression factor for traffic
-                                      increase during slow start.
-                                    type: string
                                   consistentHash:
                                     properties:
                                       httpCookie:
@@ -760,10 +756,6 @@ spec:
                                           type: string
                                         type: array
                                     type: object
-                                  minWeightPercent:
-                                    description: The minimum percentage of traffic
-                                      to send to new endpoints during slow start.
-                                    type: integer
                                   simple:
                                     enum:
                                     - UNSPECIFIED
@@ -773,6 +765,14 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  sqbAggression:
+                                    description: The aggression factor for traffic
+                                      increase during slow start.
+                                    type: string
+                                  sqbMinWeightPercent:
+                                    description: The minimum percentage of traffic
+                                      to send to new endpoints during slow start.
+                                    type: integer
                                   warmupDurationSecs:
                                     description: Represents the warmup duration of
                                       Service.
@@ -1058,10 +1058,6 @@ spec:
                       required:
                       - consistentHash
                     properties:
-                      aggression:
-                        description: The aggression factor for traffic increase during
-                          slow start.
-                        type: string
                       consistentHash:
                         properties:
                           httpCookie:
@@ -1148,10 +1144,6 @@ spec:
                               type: string
                             type: array
                         type: object
-                      minWeightPercent:
-                        description: The minimum percentage of traffic to send to
-                          new endpoints during slow start.
-                        type: integer
                       simple:
                         enum:
                         - UNSPECIFIED
@@ -1161,6 +1153,14 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      sqbAggression:
+                        description: The aggression factor for traffic increase during
+                          slow start.
+                        type: string
+                      sqbMinWeightPercent:
+                        description: The minimum percentage of traffic to send to
+                          new endpoints during slow start.
+                        type: integer
                       warmupDurationSecs:
                         description: Represents the warmup duration of Service.
                         type: string
@@ -1356,10 +1356,6 @@ spec:
                             required:
                             - consistentHash
                           properties:
-                            aggression:
-                              description: The aggression factor for traffic increase
-                                during slow start.
-                              type: string
                             consistentHash:
                               properties:
                                 httpCookie:
@@ -1449,10 +1445,6 @@ spec:
                                     type: string
                                   type: array
                               type: object
-                            minWeightPercent:
-                              description: The minimum percentage of traffic to send
-                                to new endpoints during slow start.
-                              type: integer
                             simple:
                               enum:
                               - UNSPECIFIED
@@ -1462,6 +1454,14 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            sqbAggression:
+                              description: The aggression factor for traffic increase
+                                during slow start.
+                              type: string
+                            sqbMinWeightPercent:
+                              description: The minimum percentage of traffic to send
+                                to new endpoints during slow start.
+                              type: integer
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -1801,10 +1801,6 @@ spec:
                             required:
                             - consistentHash
                           properties:
-                            aggression:
-                              description: The aggression factor for traffic increase
-                                during slow start.
-                              type: string
                             consistentHash:
                               properties:
                                 httpCookie:
@@ -1894,10 +1890,6 @@ spec:
                                     type: string
                                   type: array
                               type: object
-                            minWeightPercent:
-                              description: The minimum percentage of traffic to send
-                                to new endpoints during slow start.
-                              type: integer
                             simple:
                               enum:
                               - UNSPECIFIED
@@ -1907,6 +1899,14 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            sqbAggression:
+                              description: The aggression factor for traffic increase
+                                during slow start.
+                              type: string
+                            sqbMinWeightPercent:
+                              description: The minimum percentage of traffic to send
+                                to new endpoints during slow start.
+                              type: integer
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -2105,10 +2105,6 @@ spec:
                                   required:
                                   - consistentHash
                                 properties:
-                                  aggression:
-                                    description: The aggression factor for traffic
-                                      increase during slow start.
-                                    type: string
                                   consistentHash:
                                     properties:
                                       httpCookie:
@@ -2201,10 +2197,6 @@ spec:
                                           type: string
                                         type: array
                                     type: object
-                                  minWeightPercent:
-                                    description: The minimum percentage of traffic
-                                      to send to new endpoints during slow start.
-                                    type: integer
                                   simple:
                                     enum:
                                     - UNSPECIFIED
@@ -2214,6 +2206,14 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  sqbAggression:
+                                    description: The aggression factor for traffic
+                                      increase during slow start.
+                                    type: string
+                                  sqbMinWeightPercent:
+                                    description: The minimum percentage of traffic
+                                      to send to new endpoints during slow start.
+                                    type: integer
                                   warmupDurationSecs:
                                     description: Represents the warmup duration of
                                       Service.
@@ -2499,10 +2499,6 @@ spec:
                       required:
                       - consistentHash
                     properties:
-                      aggression:
-                        description: The aggression factor for traffic increase during
-                          slow start.
-                        type: string
                       consistentHash:
                         properties:
                           httpCookie:
@@ -2589,10 +2585,6 @@ spec:
                               type: string
                             type: array
                         type: object
-                      minWeightPercent:
-                        description: The minimum percentage of traffic to send to
-                          new endpoints during slow start.
-                        type: integer
                       simple:
                         enum:
                         - UNSPECIFIED
@@ -2602,6 +2594,14 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      sqbAggression:
+                        description: The aggression factor for traffic increase during
+                          slow start.
+                        type: string
+                      sqbMinWeightPercent:
+                        description: The minimum percentage of traffic to send to
+                          new endpoints during slow start.
+                        type: integer
                       warmupDurationSecs:
                         description: Represents the warmup duration of Service.
                         type: string
@@ -2797,10 +2797,6 @@ spec:
                             required:
                             - consistentHash
                           properties:
-                            aggression:
-                              description: The aggression factor for traffic increase
-                                during slow start.
-                              type: string
                             consistentHash:
                               properties:
                                 httpCookie:
@@ -2890,10 +2886,6 @@ spec:
                                     type: string
                                   type: array
                               type: object
-                            minWeightPercent:
-                              description: The minimum percentage of traffic to send
-                                to new endpoints during slow start.
-                              type: integer
                             simple:
                               enum:
                               - UNSPECIFIED
@@ -2903,6 +2895,14 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            sqbAggression:
+                              description: The aggression factor for traffic increase
+                                during slow start.
+                              type: string
+                            sqbMinWeightPercent:
+                              description: The minimum percentage of traffic to send
+                                to new endpoints during slow start.
+                              type: integer
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
