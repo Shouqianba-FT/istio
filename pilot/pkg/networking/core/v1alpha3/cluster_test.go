@@ -27,6 +27,7 @@ import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	http "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
+	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/gomega"
 	"google.golang.org/protobuf/proto"
@@ -34,7 +35,6 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	wrappers "google.golang.org/protobuf/types/known/wrapperspb"
-
 	meshconfig "istio.io/api/mesh/v1alpha1"
 	networking "istio.io/api/networking/v1alpha3"
 	authn_beta "istio.io/api/security/v1beta1"
@@ -2908,4 +2908,43 @@ func TestBuildStaticClusterWithCredentialSocket(t *testing.T) {
 	g.Expect(xdstest.MapKeys(xdstest.ExtractClusters(clusters))).To(Equal([]string{
 		"BlackHoleCluster", "InboundPassthroughClusterIpv4", "PassthroughCluster",
 	}))
+}
+
+func Test_setSlowStartConfig(t *testing.T) {
+	type args struct {
+		loadbalancer *networking.LoadBalancerSettings
+	}
+	tests := []struct {
+		name string
+		args args
+		want *cluster.Cluster_SlowStartConfig
+	}{
+		{
+			name: "",
+			args: args{
+				loadbalancer: &networking.LoadBalancerSettings{
+					WarmupDurationSecs: &durationpb.Duration{Seconds: 60},
+					SqbAggression: "20",
+					SqbMinWeightPercent: 18,
+				},
+			},
+			want: &cluster.Cluster_SlowStartConfig{
+				SlowStartWindow: &durationpb.Duration{Seconds: 60},
+				Aggression: &core.RuntimeDouble{
+					DefaultValue: 20,
+					RuntimeKey: "istio.slowstart.aggression",
+				},
+				MinWeightPercent: &typev3.Percent{
+					Value: 18,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := setSlowStartConfig(tt.args.loadbalancer); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("setSlowStartConfig() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
