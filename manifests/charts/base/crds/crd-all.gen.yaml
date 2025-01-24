@@ -457,8 +457,23 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              description: Represents the warmup configuration of
+                                Service.
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  nullable: true
+                                  type: number
+                              type: object
                             warmupDurationSecs:
-                              description: Represents the warmup duration of Service.
+                              description: 'Deprecated: use `warmup` instead.'
                               type: string
                           type: object
                         outlierDetection:
@@ -756,9 +771,23 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  warmup:
+                                    description: Represents the warmup configuration
+                                      of Service.
+                                    properties:
+                                      aggression:
+                                        description: This parameter controls the speed
+                                          of traffic increase over the warmup duration.
+                                        nullable: true
+                                        type: number
+                                      duration:
+                                        type: string
+                                      minimumPercent:
+                                        nullable: true
+                                        type: number
+                                    type: object
                                   warmupDurationSecs:
-                                    description: Represents the warmup duration of
-                                      Service.
+                                    description: 'Deprecated: use `warmup` instead.'
                                     type: string
                                 type: object
                               outlierDetection:
@@ -1136,8 +1165,22 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      warmup:
+                        description: Represents the warmup configuration of Service.
+                        properties:
+                          aggression:
+                            description: This parameter controls the speed of traffic
+                              increase over the warmup duration.
+                            nullable: true
+                            type: number
+                          duration:
+                            type: string
+                          minimumPercent:
+                            nullable: true
+                            type: number
+                        type: object
                       warmupDurationSecs:
-                        description: Represents the warmup duration of Service.
+                        description: 'Deprecated: use `warmup` instead.'
                         type: string
                     type: object
                   outlierDetection:
@@ -1429,8 +1472,23 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              description: Represents the warmup configuration of
+                                Service.
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  nullable: true
+                                  type: number
+                              type: object
                             warmupDurationSecs:
-                              description: Represents the warmup duration of Service.
+                              description: 'Deprecated: use `warmup` instead.'
                               type: string
                           type: object
                         outlierDetection:
@@ -1866,8 +1924,23 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              description: Represents the warmup configuration of
+                                Service.
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  nullable: true
+                                  type: number
+                              type: object
                             warmupDurationSecs:
-                              description: Represents the warmup duration of Service.
+                              description: 'Deprecated: use `warmup` instead.'
                               type: string
                           type: object
                         outlierDetection:
@@ -2165,9 +2238,23 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  warmup:
+                                    description: Represents the warmup configuration
+                                      of Service.
+                                    properties:
+                                      aggression:
+                                        description: This parameter controls the speed
+                                          of traffic increase over the warmup duration.
+                                        nullable: true
+                                        type: number
+                                      duration:
+                                        type: string
+                                      minimumPercent:
+                                        nullable: true
+                                        type: number
+                                    type: object
                                   warmupDurationSecs:
-                                    description: Represents the warmup duration of
-                                      Service.
+                                    description: 'Deprecated: use `warmup` instead.'
                                     type: string
                                 type: object
                               outlierDetection:
@@ -2545,8 +2632,22 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      warmup:
+                        description: Represents the warmup configuration of Service.
+                        properties:
+                          aggression:
+                            description: This parameter controls the speed of traffic
+                              increase over the warmup duration.
+                            nullable: true
+                            type: number
+                          duration:
+                            type: string
+                          minimumPercent:
+                            nullable: true
+                            type: number
+                        type: object
                       warmupDurationSecs:
-                        description: Represents the warmup duration of Service.
+                        description: 'Deprecated: use `warmup` instead.'
                         type: string
                     type: object
                   outlierDetection:
@@ -2838,8 +2939,23 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              description: Represents the warmup configuration of
+                                Service.
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  nullable: true
+                                  type: number
+                              type: object
                             warmupDurationSecs:
-                              description: Represents the warmup duration of Service.
+                              description: 'Deprecated: use `warmup` instead.'
                               type: string
                           type: object
                         outlierDetection:
