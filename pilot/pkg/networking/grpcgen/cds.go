@@ -21,7 +21,7 @@ import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	tls "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
-	"google.golang.org/protobuf/types/known/durationpb"
+	xdstype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/features"
@@ -225,17 +225,27 @@ func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.Lo
 	if loadbalancer.GetWarmupDurationSecs() != nil {
 		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
 			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
-				SlowStartConfig: setSlowStartConfig(loadbalancer.GetWarmupDurationSecs()),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
 }
 
 // setSlowStartConfig will set the warmupDurationSecs for LEAST_REQUEST and ROUND_ROBIN if provided in DestinationRule
-func setSlowStartConfig(dur *durationpb.Duration) *cluster.Cluster_SlowStartConfig {
-	return &cluster.Cluster_SlowStartConfig{
-		SlowStartWindow: dur,
+func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
+	slowStartConfig := &cluster.Cluster_SlowStartConfig{
+		SlowStartWindow: loadbalancer.GetWarmupDurationSecs(),
 	}
+	if loadbalancer.Warmup != nil {
+		slowStartConfig.Aggression = &core.RuntimeDouble{
+			DefaultValue: loadbalancer.Warmup.Aggression.Value,
+			RuntimeKey:   "istio.slowstart.aggression",
+		}
+		slowStartConfig.MinWeightPercent = &xdstype.Percent{
+			Value: float64(loadbalancer.Warmup.MinimumPercent.Value),
+		}
+	}
+	return slowStartConfig
 }
 
 func (b *clusterBuilder) applyTLS(c *cluster.Cluster, policy *networking.TrafficPolicy) {
