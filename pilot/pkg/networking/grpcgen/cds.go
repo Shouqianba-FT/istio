@@ -222,7 +222,7 @@ func (b *clusterBuilder) applyLoadBalancing(c *cluster.Cluster, policy *networki
 
 // applyRoundRobinLoadBalancer will set the LbPolicy and create an LbConfig for ROUND_ROBIN if used in LoadBalancerSettings
 func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.LoadBalancerSettings) {
-	if loadbalancer.GetWarmupDurationSecs() != nil {
+	if loadbalancer.GetWarmupDurationSecs() != nil || loadbalancer.GetWarmup() != nil {
 		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
 			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
 				SlowStartConfig: setSlowStartConfig(loadbalancer),
@@ -233,17 +233,18 @@ func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.Lo
 
 // setSlowStartConfig will set the warmupDurationSecs for LEAST_REQUEST and ROUND_ROBIN if provided in DestinationRule
 func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
-	slowStartConfig := &cluster.Cluster_SlowStartConfig{
-		SlowStartWindow: loadbalancer.GetWarmupDurationSecs(),
-	}
-	if loadbalancer.Warmup != nil {
+	var slowStartConfig = &cluster.Cluster_SlowStartConfig{}
+	if loadbalancer.GetWarmup() != nil {
 		slowStartConfig.Aggression = &core.RuntimeDouble{
 			DefaultValue: loadbalancer.Warmup.Aggression.Value,
 			RuntimeKey:   "istio.slowstart.aggression",
 		}
 		slowStartConfig.MinWeightPercent = &xdstype.Percent{
-			Value: float64(loadbalancer.Warmup.MinimumPercent.Value),
+			Value: loadbalancer.Warmup.MinimumPercent.GetValue(),
 		}
+		slowStartConfig.SlowStartWindow = loadbalancer.Warmup.GetDuration()
+	} else if loadbalancer.GetWarmupDurationSecs() != nil {
+		slowStartConfig.SlowStartWindow = loadbalancer.GetWarmupDurationSecs()
 	}
 	return slowStartConfig
 }
