@@ -28,7 +28,6 @@ import (
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	metadata "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
 	xdstype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
-	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
 	wrappers "google.golang.org/protobuf/types/known/wrapperspb"
 
@@ -860,10 +859,10 @@ func applySimpleDefaultLoadBalancer(c *cluster.Cluster, loadbalancer *networking
 func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.LoadBalancerSettings) {
 	c.LbPolicy = cluster.Cluster_ROUND_ROBIN
 
-	if loadbalancer.GetWarmupDurationSecs() != nil {
+	if loadbalancer.GetWarmupDurationSecs() != nil || loadbalancer.GetWarmup() != nil {
 		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
 			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
-				SlowStartConfig: setSlowStartConfig(loadbalancer.GetWarmupDurationSecs()),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
@@ -873,20 +872,31 @@ func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.Lo
 func applyLeastRequestLoadBalancer(c *cluster.Cluster, loadbalancer *networking.LoadBalancerSettings) {
 	c.LbPolicy = cluster.Cluster_LEAST_REQUEST
 
-	if loadbalancer.GetWarmupDurationSecs() != nil {
+	if loadbalancer.GetWarmupDurationSecs() != nil || loadbalancer.GetWarmup() != nil {
 		c.LbConfig = &cluster.Cluster_LeastRequestLbConfig_{
 			LeastRequestLbConfig: &cluster.Cluster_LeastRequestLbConfig{
-				SlowStartConfig: setSlowStartConfig(loadbalancer.GetWarmupDurationSecs()),
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
 			},
 		}
 	}
 }
 
 // setSlowStartConfig will set the warmupDurationSecs for LEAST_REQUEST and ROUND_ROBIN if provided in DestinationRule
-func setSlowStartConfig(dur *durationpb.Duration) *cluster.Cluster_SlowStartConfig {
-	return &cluster.Cluster_SlowStartConfig{
-		SlowStartWindow: dur,
+func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
+	var slowStartConfig = &cluster.Cluster_SlowStartConfig{}
+	if loadbalancer.GetWarmup() != nil {
+		slowStartConfig.Aggression = &core.RuntimeDouble{
+			DefaultValue: loadbalancer.Warmup.Aggression.Value,
+			RuntimeKey:   "istio.slowstart.aggression",
+		}
+		slowStartConfig.MinWeightPercent = &xdstype.Percent{
+			Value: loadbalancer.Warmup.MinimumPercent.GetValue(),
+		}
+		slowStartConfig.SlowStartWindow = loadbalancer.Warmup.GetDuration()
+	} else if loadbalancer.GetWarmupDurationSecs() != nil {
+		slowStartConfig.SlowStartWindow = loadbalancer.GetWarmupDurationSecs()
 	}
+	return slowStartConfig
 }
 
 // ApplyRingHashLoadBalancer will set the LbPolicy and create an LbConfig for RING_HASH if  used in LoadBalancerSettings
