@@ -106,7 +106,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.14.3
-	istio.io/api v1.22.7-0.20241205190107-5d7b98128323
+	istio.io/api v1.22.9-0.20251118015927-7d726adb356f
 	istio.io/client-go v1.22.7-0.20241205190906-f1b3ac5102a8
 	k8s.io/api v0.30.0
 	k8s.io/apiextensions-apiserver v0.30.0
@@ -252,3 +252,5 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.16.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 )
+
+replace istio.io/api => github.com/Shouqianba-FT/api v1.22.9-0.20251118015927-7d726adb356f

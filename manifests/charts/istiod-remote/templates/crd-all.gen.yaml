@@ -571,6 +571,27 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0.01
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0
+                                  nullable: true
+                                  type: number
+                              required:
+                              - duration
+                              type: object
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -884,6 +905,27 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  warmup:
+                                    properties:
+                                      aggression:
+                                        description: This parameter controls the speed
+                                          of traffic increase over the warmup duration.
+                                        format: double
+                                        maximum: 100
+                                        minimum: 0.01
+                                        nullable: true
+                                        type: number
+                                      duration:
+                                        type: string
+                                      minimumPercent:
+                                        format: double
+                                        maximum: 100
+                                        minimum: 0
+                                        nullable: true
+                                        type: number
+                                    required:
+                                    - duration
+                                    type: object
                                   warmupDurationSecs:
                                     description: Represents the warmup duration of
                                       Service.
@@ -1347,6 +1389,27 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      warmup:
+                        properties:
+                          aggression:
+                            description: This parameter controls the speed of traffic
+                              increase over the warmup duration.
+                            format: double
+                            maximum: 100
+                            minimum: 0.01
+                            nullable: true
+                            type: number
+                          duration:
+                            type: string
+                          minimumPercent:
+                            format: double
+                            maximum: 100
+                            minimum: 0
+                            nullable: true
+                            type: number
+                        required:
+                        - duration
+                        type: object
                       warmupDurationSecs:
                         description: Represents the warmup duration of Service.
                         type: string
@@ -1654,6 +1717,27 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0.01
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0
+                                  nullable: true
+                                  type: number
+                              required:
+                              - duration
+                              type: object
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -2178,6 +2262,27 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0.01
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0
+                                  nullable: true
+                                  type: number
+                              required:
+                              - duration
+                              type: object
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -2491,6 +2596,27 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  warmup:
+                                    properties:
+                                      aggression:
+                                        description: This parameter controls the speed
+                                          of traffic increase over the warmup duration.
+                                        format: double
+                                        maximum: 100
+                                        minimum: 0.01
+                                        nullable: true
+                                        type: number
+                                      duration:
+                                        type: string
+                                      minimumPercent:
+                                        format: double
+                                        maximum: 100
+                                        minimum: 0
+                                        nullable: true
+                                        type: number
+                                    required:
+                                    - duration
+                                    type: object
                                   warmupDurationSecs:
                                     description: Represents the warmup duration of
                                       Service.
@@ -2954,6 +3080,27 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      warmup:
+                        properties:
+                          aggression:
+                            description: This parameter controls the speed of traffic
+                              increase over the warmup duration.
+                            format: double
+                            maximum: 100
+                            minimum: 0.01
+                            nullable: true
+                            type: number
+                          duration:
+                            type: string
+                          minimumPercent:
+                            format: double
+                            maximum: 100
+                            minimum: 0
+                            nullable: true
+                            type: number
+                        required:
+                        - duration
+                        type: object
                       warmupDurationSecs:
                         description: Represents the warmup duration of Service.
                         type: string
@@ -3261,6 +3408,27 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0.01
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0
+                                  nullable: true
+                                  type: number
+                              required:
+                              - duration
+                              type: object
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -3785,6 +3953,27 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0.01
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0
+                                  nullable: true
+                                  type: number
+                              required:
+                              - duration
+                              type: object
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
@@ -4098,6 +4287,27 @@ spec:
                                     - ROUND_ROBIN
                                     - LEAST_REQUEST
                                     type: string
+                                  warmup:
+                                    properties:
+                                      aggression:
+                                        description: This parameter controls the speed
+                                          of traffic increase over the warmup duration.
+                                        format: double
+                                        maximum: 100
+                                        minimum: 0.01
+                                        nullable: true
+                                        type: number
+                                      duration:
+                                        type: string
+                                      minimumPercent:
+                                        format: double
+                                        maximum: 100
+                                        minimum: 0
+                                        nullable: true
+                                        type: number
+                                    required:
+                                    - duration
+                                    type: object
                                   warmupDurationSecs:
                                     description: Represents the warmup duration of
                                       Service.
@@ -4561,6 +4771,27 @@ spec:
                         - ROUND_ROBIN
                         - LEAST_REQUEST
                         type: string
+                      warmup:
+                        properties:
+                          aggression:
+                            description: This parameter controls the speed of traffic
+                              increase over the warmup duration.
+                            format: double
+                            maximum: 100
+                            minimum: 0.01
+                            nullable: true
+                            type: number
+                          duration:
+                            type: string
+                          minimumPercent:
+                            format: double
+                            maximum: 100
+                            minimum: 0
+                            nullable: true
+                            type: number
+                        required:
+                        - duration
+                        type: object
                       warmupDurationSecs:
                         description: Represents the warmup duration of Service.
                         type: string
@@ -4868,6 +5099,27 @@ spec:
                               - ROUND_ROBIN
                               - LEAST_REQUEST
                               type: string
+                            warmup:
+                              properties:
+                                aggression:
+                                  description: This parameter controls the speed of
+                                    traffic increase over the warmup duration.
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0.01
+                                  nullable: true
+                                  type: number
+                                duration:
+                                  type: string
+                                minimumPercent:
+                                  format: double
+                                  maximum: 100
+                                  minimum: 0
+                                  nullable: true
+                                  type: number
+                              required:
+                              - duration
+                              type: object
                             warmupDurationSecs:
                               description: Represents the warmup duration of Service.
                               type: string
