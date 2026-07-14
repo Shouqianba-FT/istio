@@ -227,4 +227,4 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
 )
 
-replace istio.io/api => github.com/Shouqianba-FT/api v1.26.9-0.20260714055737-b5e6e7656ad5
+replace istio.io/api => github.com/Shouqianba-FT/api v1.26.8-shouqianba.0
