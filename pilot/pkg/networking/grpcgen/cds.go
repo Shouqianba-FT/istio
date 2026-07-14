@@ -21,6 +21,7 @@ import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	tls "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	xdstype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/model"
@@ -212,11 +213,48 @@ func (b *clusterBuilder) applyTrafficPolicy(c *cluster.Cluster, trafficPolicy *n
 func (b *clusterBuilder) applyLoadBalancing(c *cluster.Cluster, policy *networking.TrafficPolicy) {
 	switch policy.GetLoadBalancer().GetSimple() {
 	case networking.LoadBalancerSettings_ROUND_ROBIN, networking.LoadBalancerSettings_UNSPECIFIED:
-	// ok
+		applyRoundRobinLoadBalancer(c, policy.GetLoadBalancer())
 	default:
 		log.Warnf("cannot apply LbPolicy %s to %s", policy.LoadBalancer.GetSimple(), b.node.ID)
 	}
 	corexds.ApplyRingHashLoadBalancer(c, policy.GetLoadBalancer())
+}
+
+// applyRoundRobinLoadBalancer will set the LbPolicy and create an LbConfig for ROUND_ROBIN if used in LoadBalancerSettings.
+func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.LoadBalancerSettings) {
+	if loadbalancer.GetWarmupDurationSecs() != nil || loadbalancer.GetWarmup() != nil {
+		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
+			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
+			},
+		}
+	}
+}
+
+// setSlowStartConfig will set the warmupDurationSecs for ROUND_ROBIN if provided in DestinationRule.
+func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
+	slowStartConfig := &cluster.Cluster_SlowStartConfig{}
+	if warmup := loadbalancer.GetWarmup(); warmup != nil {
+		aggression := 1.0
+		if warmup.Aggression != nil {
+			aggression = warmup.Aggression.GetValue()
+		}
+		minWeightPercent := 10.0
+		if warmup.MinimumPercent != nil {
+			minWeightPercent = warmup.MinimumPercent.GetValue()
+		}
+		slowStartConfig.Aggression = &core.RuntimeDouble{
+			DefaultValue: aggression,
+			RuntimeKey:   "istio.slowstart.aggression",
+		}
+		slowStartConfig.MinWeightPercent = &xdstype.Percent{
+			Value: minWeightPercent,
+		}
+		slowStartConfig.SlowStartWindow = warmup.GetDuration()
+	} else if loadbalancer.GetWarmupDurationSecs() != nil {
+		slowStartConfig.SlowStartWindow = loadbalancer.GetWarmupDurationSecs()
+	}
+	return slowStartConfig
 }
 
 func (b *clusterBuilder) applyTLS(c *cluster.Cluster, policy *networking.TrafficPolicy) {

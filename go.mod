@@ -226,3 +226,5 @@ require (
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
 )
+
+replace istio.io/api => github.com/Shouqianba-FT/api v1.26.7-0.20260714055737-b5e6e7656ad5
