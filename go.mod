@@ -113,6 +113,8 @@ require (
 	sigs.k8s.io/yaml v1.5.0
 )
 
+replace istio.io/api => github.com/Shouqianba-FT/api v1.27.9-0.20260720071329-dcab4d0c0d56
+
 require (
 	cel.dev/expr v0.24.0 // indirect
 	dario.cat/mergo v1.0.2 // indirect
