@@ -3599,6 +3599,66 @@ func TestValidateLoadBalancer(t *testing.T) {
 	}
 }
 
+func TestValidateLoadBalancerWarmup(t *testing.T) {
+	for _, tt := range []struct {
+		name       string
+		aggression *wrapperspb.DoubleValue
+		wantError  bool
+	}{
+		{name: "omitted aggression"},
+		{name: "negative aggression", aggression: wrapperspb.Double(-0.1), wantError: true},
+		// The webhook intentionally accepts zero; the CRD enforces minimum 0.01.
+		{name: "zero aggression", aggression: wrapperspb.Double(0)},
+		{name: "below CRD minimum", aggression: wrapperspb.Double(0.005)},
+		{name: "CRD minimum", aggression: wrapperspb.Double(0.01)},
+		{name: "fractional aggression", aggression: wrapperspb.Double(0.5)},
+		{name: "default aggression", aggression: wrapperspb.Double(1)},
+		{name: "larger aggression", aggression: wrapperspb.Double(5)},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := validateLoadBalancer(&networking.LoadBalancerSettings{
+				Warmup: &networking.WarmupConfiguration{
+					Duration:   durationpb.New(time.Second),
+					Aggression: tt.aggression,
+				},
+			}, nil)
+			if (got.Err != nil) != tt.wantError {
+				t.Fatalf("got error %v, want error: %v", got.Err, tt.wantError)
+			}
+			if tt.wantError && !strings.Contains(got.Err.Error(), "aggression should be greater than 0") {
+				t.Fatalf("unexpected aggression error: %v", got.Err)
+			}
+		})
+	}
+	for _, tt := range []struct {
+		name   string
+		warmup *networking.WarmupConfiguration
+		want   string
+	}{
+		{
+			name:   "duration remains required",
+			warmup: &networking.WarmupConfiguration{Aggression: wrapperspb.Double(0.5)},
+			want:   "duration is required",
+		},
+		{
+			name: "minimum percent limit remains enforced",
+			warmup: &networking.WarmupConfiguration{
+				Duration:       durationpb.New(time.Second),
+				Aggression:     wrapperspb.Double(0.5),
+				MinimumPercent: wrapperspb.Double(101),
+			},
+			want: "minimumPercent value should be less than or equal to 100",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := validateLoadBalancer(&networking.LoadBalancerSettings{Warmup: tt.warmup}, nil)
+			if got.Err == nil || !strings.Contains(got.Err.Error(), tt.want) {
+				t.Fatalf("got error %v, want error containing %q", got.Err, tt.want)
+			}
+		})
+	}
+}
+
 func TestValidateOutlierDetection(t *testing.T) {
 	cases := []struct {
 		name  string

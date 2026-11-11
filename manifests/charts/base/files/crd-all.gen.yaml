@@ -1085,7 +1085,7 @@ spec:
                                   description: This parameter controls the speed of
                                     traffic increase over the warmup duration.
                                   format: double
-                                  minimum: 0
+                                  minimum: 0.01
                                   nullable: true
                                   type: number
                                 duration:
@@ -1468,7 +1468,7 @@ spec:
                                         description: This parameter controls the speed
                                           of traffic increase over the warmup duration.
                                         format: double
-                                        minimum: 0
+                                        minimum: 0.01
                                         nullable: true
                                         type: number
                                       duration:
@@ -2017,7 +2017,7 @@ spec:
                             description: This parameter controls the speed of traffic
                               increase over the warmup duration.
                             format: double
-                            minimum: 0
+                            minimum: 0.01
                             nullable: true
                             type: number
                           duration:
@@ -2391,7 +2391,7 @@ spec:
                                   description: This parameter controls the speed of
                                     traffic increase over the warmup duration.
                                   format: double
-                                  minimum: 0
+                                  minimum: 0.01
                                   nullable: true
                                   type: number
                                 duration:
@@ -3086,7 +3086,7 @@ spec:
                                   description: This parameter controls the speed of
                                     traffic increase over the warmup duration.
                                   format: double
-                                  minimum: 0
+                                  minimum: 0.01
                                   nullable: true
                                   type: number
                                 duration:
@@ -3469,7 +3469,7 @@ spec:
                                         description: This parameter controls the speed
                                           of traffic increase over the warmup duration.
                                         format: double
-                                        minimum: 0
+                                        minimum: 0.01
                                         nullable: true
                                         type: number
                                       duration:
@@ -4018,7 +4018,7 @@ spec:
                             description: This parameter controls the speed of traffic
                               increase over the warmup duration.
                             format: double
-                            minimum: 0
+                            minimum: 0.01
                             nullable: true
                             type: number
                           duration:
@@ -4392,7 +4392,7 @@ spec:
                                   description: This parameter controls the speed of
                                     traffic increase over the warmup duration.
                                   format: double
-                                  minimum: 0
+                                  minimum: 0.01
                                   nullable: true
                                   type: number
                                 duration:
@@ -5087,7 +5087,7 @@ spec:
                                   description: This parameter controls the speed of
                                     traffic increase over the warmup duration.
                                   format: double
-                                  minimum: 0
+                                  minimum: 0.01
                                   nullable: true
                                   type: number
                                 duration:
@@ -5470,7 +5470,7 @@ spec:
                                         description: This parameter controls the speed
                                           of traffic increase over the warmup duration.
                                         format: double
-                                        minimum: 0
+                                        minimum: 0.01
                                         nullable: true
                                         type: number
                                       duration:
@@ -6019,7 +6019,7 @@ spec:
                             description: This parameter controls the speed of traffic
                               increase over the warmup duration.
                             format: double
-                            minimum: 0
+                            minimum: 0.01
                             nullable: true
                             type: number
                           duration:
@@ -6393,7 +6393,7 @@ spec:
                                   description: This parameter controls the speed of
                                     traffic increase over the warmup duration.
                                   format: double
-                                  minimum: 0
+                                  minimum: 0.01
                                   nullable: true
                                   type: number
                                 duration:

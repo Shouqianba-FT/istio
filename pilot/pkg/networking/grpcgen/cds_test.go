@@ -16,8 +16,14 @@ package grpcgen
 
 import (
 	"testing"
+	"time"
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	xdstype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/model"
@@ -234,4 +240,160 @@ func TestApplyTrafficPolicy(t *testing.T) {
 			t.Errorf("LbPolicy should be LEAST_REQUEST, got %v", c.LbPolicy)
 		}
 	})
+}
+
+func TestApplyTrafficPolicyWarmup(t *testing.T) {
+	t.Parallel()
+
+	warmup := func(aggression, minimum *wrapperspb.DoubleValue) *networking.WarmupConfiguration {
+		return &networking.WarmupConfiguration{
+			Duration:       durationpb.New(10 * time.Second),
+			Aggression:     aggression,
+			MinimumPercent: minimum,
+		}
+	}
+	simple := func(mode networking.LoadBalancerSettings_SimpleLB,
+		w *networking.WarmupConfiguration, legacy *durationpb.Duration,
+	) *networking.TrafficPolicy {
+		return &networking.TrafficPolicy{
+			LoadBalancer: &networking.LoadBalancerSettings{
+				LbPolicy:           &networking.LoadBalancerSettings_Simple{Simple: mode},
+				Warmup:             w,
+				WarmupDurationSecs: legacy,
+			},
+		}
+	}
+	modern := func(aggression, minimum float64) *cluster.Cluster_RoundRobinLbConfig {
+		return &cluster.Cluster_RoundRobinLbConfig{
+			SlowStartConfig: &cluster.Cluster_SlowStartConfig{
+				SlowStartWindow: durationpb.New(10 * time.Second),
+				Aggression: &core.RuntimeDouble{
+					DefaultValue: aggression,
+					RuntimeKey:   "istio.slowstart.aggression",
+				},
+				MinWeightPercent: &xdstype.Percent{Value: minimum},
+			},
+		}
+	}
+	consistentHash := &networking.TrafficPolicy{
+		LoadBalancer: &networking.LoadBalancerSettings{
+			LbPolicy: &networking.LoadBalancerSettings_ConsistentHash{
+				ConsistentHash: &networking.LoadBalancerSettings_ConsistentHashLB{
+					HashKey: &networking.LoadBalancerSettings_ConsistentHashLB_HttpHeaderName{
+						HttpHeaderName: "x-session-id",
+					},
+				},
+			},
+			Warmup: warmup(nil, nil),
+		},
+	}
+	withCircuitBreaker := simple(networking.LoadBalancerSettings_ROUND_ROBIN, warmup(nil, nil), nil)
+	withCircuitBreaker.ConnectionPool = &networking.ConnectionPoolSettings{
+		Http: &networking.ConnectionPoolSettings_HTTPSettings{Http2MaxRequests: 100},
+	}
+
+	tests := []struct {
+		name            string
+		policy          *networking.TrafficPolicy
+		wantLB          cluster.Cluster_LbPolicy
+		wantRR          *cluster.Cluster_RoundRobinLbConfig
+		wantMaxRequests uint32
+	}{
+		{name: "nil policy"},
+		{name: "nil load balancer", policy: &networking.TrafficPolicy{}},
+		{
+			name:   "round robin without warmup",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN, nil, nil),
+		},
+		{
+			name:   "unspecified without warmup",
+			policy: simple(networking.LoadBalancerSettings_UNSPECIFIED, nil, nil),
+		},
+		{
+			name:   "round robin defaults",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN, warmup(nil, nil), nil),
+			wantRR: modern(1, 10),
+		},
+		{
+			name:   "unspecified defaults",
+			policy: simple(networking.LoadBalancerSettings_UNSPECIFIED, warmup(nil, nil), nil),
+			wantRR: modern(1, 10),
+		},
+		{
+			name: "minimum supported aggression",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN,
+				warmup(wrapperspb.Double(0.01), wrapperspb.Double(2.5)), nil),
+			wantRR: modern(0.01, 2.5),
+		},
+		{
+			name: "aggression set and minimum omitted",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN,
+				warmup(wrapperspb.Double(0.5), nil), nil),
+			wantRR: modern(0.5, 10),
+		},
+		{
+			name: "minimum explicitly zero and aggression omitted",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN,
+				warmup(nil, wrapperspb.Double(0)), nil),
+			wantRR: modern(1, 0),
+		},
+		{
+			name:   "legacy duration preserves window-only output",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN, nil, durationpb.New(5*time.Second)),
+			wantRR: &cluster.Cluster_RoundRobinLbConfig{
+				SlowStartConfig: &cluster.Cluster_SlowStartConfig{
+					SlowStartWindow: durationpb.New(5 * time.Second),
+				},
+			},
+		},
+		{
+			name: "modern warmup takes precedence over legacy duration",
+			policy: simple(networking.LoadBalancerSettings_ROUND_ROBIN,
+				warmup(nil, nil), durationpb.New(5*time.Second)),
+			wantRR: modern(1, 10),
+		},
+		{
+			name:   "consistent hash is retained even with warmup present",
+			policy: consistentHash,
+			wantLB: cluster.Cluster_RING_HASH,
+		},
+		{
+			name:   "least request is retained even with warmup present",
+			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST, warmup(nil, nil), nil),
+			wantLB: cluster.Cluster_LEAST_REQUEST,
+		},
+		{
+			name:            "warmup and circuit breaker are both emitted",
+			policy:          withCircuitBreaker,
+			wantRR:          modern(1, 10),
+			wantMaxRequests: 100,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			c := &cluster.Cluster{}
+			b := &clusterBuilder{}
+			b.applyTrafficPolicy(c, tt.policy)
+			if c.GetLbPolicy() != tt.wantLB {
+				t.Errorf("LbPolicy: got %v, want %v", c.GetLbPolicy(), tt.wantLB)
+			}
+			if got := c.GetRoundRobinLbConfig(); !proto.Equal(got, tt.wantRR) {
+				t.Errorf("round robin config: got %v, want %v", got, tt.wantRR)
+			}
+			if tt.wantMaxRequests == 0 {
+				if c.CircuitBreakers != nil {
+					t.Errorf("unexpected circuit breakers: %v", c.CircuitBreakers)
+				}
+				return
+			}
+			thresholds := c.GetCircuitBreakers().GetThresholds()
+			if len(thresholds) != 1 {
+				t.Fatalf("got %d circuit breaker thresholds, want 1", len(thresholds))
+			}
+			if got := thresholds[0].GetMaxRequests().GetValue(); got != tt.wantMaxRequests {
+				t.Errorf("MaxRequests: got %d, want %d", got, tt.wantMaxRequests)
+			}
+		})
+	}
 }

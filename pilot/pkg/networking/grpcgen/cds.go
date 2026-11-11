@@ -21,6 +21,7 @@ import (
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	tls "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	xdstype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	networking "istio.io/api/networking/v1alpha3"
@@ -228,11 +229,47 @@ func (b *clusterBuilder) applyLoadBalancing(c *cluster.Cluster, policy *networki
 
 	switch lb.GetSimple() {
 	case networking.LoadBalancerSettings_ROUND_ROBIN, networking.LoadBalancerSettings_UNSPECIFIED:
-		// Default gRPC behavior (round_robin) so no explicit `lb_policy` needed.
+		applyRoundRobinLoadBalancer(c, lb)
 	case networking.LoadBalancerSettings_LEAST_REQUEST:
 		c.LbPolicy = cluster.Cluster_LEAST_REQUEST
 	default:
 		log.Warnf("cannot apply LbPolicy %s to %s", lb.GetSimple(), b.node.ID)
+	}
+}
+
+// applyRoundRobinLoadBalancer creates an LbConfig for ROUND_ROBIN if warmup is used in LoadBalancerSettings.
+func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.LoadBalancerSettings) {
+	if loadbalancer.GetWarmup() != nil || loadbalancer.GetWarmupDurationSecs() != nil {
+		c.LbConfig = &cluster.Cluster_RoundRobinLbConfig_{
+			RoundRobinLbConfig: &cluster.Cluster_RoundRobinLbConfig{
+				SlowStartConfig: setSlowStartConfig(loadbalancer),
+			},
+		}
+	}
+}
+
+// setSlowStartConfig will set warmup configuration for ROUND_ROBIN if provided in DestinationRule.
+func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
+	if warmup := loadbalancer.GetWarmup(); warmup != nil {
+		aggression := 1.0
+		if warmup.Aggression != nil {
+			aggression = warmup.Aggression.GetValue()
+		}
+
+		minWeightPercent := 10.0
+		if warmup.MinimumPercent != nil {
+			minWeightPercent = warmup.MinimumPercent.GetValue()
+		}
+
+		return &cluster.Cluster_SlowStartConfig{
+			SlowStartWindow:  warmup.Duration,
+			Aggression:       &core.RuntimeDouble{DefaultValue: aggression, RuntimeKey: "istio.slowstart.aggression"},
+			MinWeightPercent: &xdstype.Percent{Value: minWeightPercent},
+		}
+	}
+
+	return &cluster.Cluster_SlowStartConfig{
+		SlowStartWindow: loadbalancer.GetWarmupDurationSecs(),
 	}
 }
 

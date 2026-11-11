@@ -78,6 +78,53 @@ func TestCRDs(t *testing.T) {
 	}
 }
 
+func TestWarmupAggressionCRDMinimum(t *testing.T) {
+	v := crdvalidation.NewIstioValidator(t)
+	for _, version := range []string{"v1alpha3", "v1beta1", "v1"} {
+		for _, tt := range []struct {
+			aggression float64
+			valid      bool
+		}{
+			{aggression: -0.1},
+			{aggression: 0},
+			{aggression: 0.005},
+			{aggression: 0.01, valid: true},
+			{aggression: 0.5, valid: true},
+			{aggression: 1, valid: true},
+		} {
+			t.Run(fmt.Sprintf("%s/%g", version, tt.aggression), func(t *testing.T) {
+				item := fmt.Sprintf(`apiVersion: networking.istio.io/%s
+kind: DestinationRule
+metadata:
+  name: warmup-boundary
+spec:
+  host: example.com
+  trafficPolicy:
+    loadBalancer:
+      warmup:
+        duration: 30s
+        aggression: %g
+`, version, tt.aggression)
+				us := &unstructured.Unstructured{}
+				if err := yaml.Unmarshal([]byte(item), us); err != nil {
+					t.Fatal(err)
+				}
+				// Exercise the number schema with float64 values. The offline validator
+				// truncates fractional minima for integer tokens, including YAML zero;
+				// integer-zero admission still needs verification against the cluster.
+				if err := unstructured.SetNestedField(us.Object, tt.aggression,
+					"spec", "trafficPolicy", "loadBalancer", "warmup", "aggression"); err != nil {
+					t.Fatal(err)
+				}
+				err := v.ValidateCustomResource(us)
+				if (err == nil) != tt.valid {
+					t.Fatalf("got validation error %v, want valid: %v", err, tt.valid)
+				}
+			})
+		}
+	}
+}
+
 func compareCRDandWebhookValidation(t *testing.T, fuzz bool, item string, v *crdvalidation.Validator) {
 	parseError := t.Fatal
 	if fuzz {
