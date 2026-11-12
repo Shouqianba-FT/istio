@@ -297,6 +297,7 @@ func TestApplyTrafficPolicyWarmup(t *testing.T) {
 		policy          *networking.TrafficPolicy
 		wantLB          cluster.Cluster_LbPolicy
 		wantRR          *cluster.Cluster_RoundRobinLbConfig
+		wantLR          *cluster.Cluster_LeastRequestLbConfig
 		wantMaxRequests uint32
 	}{
 		{name: "nil policy"},
@@ -358,9 +359,46 @@ func TestApplyTrafficPolicyWarmup(t *testing.T) {
 			wantLB: cluster.Cluster_RING_HASH,
 		},
 		{
-			name:   "least request is retained even with warmup present",
+			name:   "least request without warmup",
+			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST, nil, nil),
+			wantLB: cluster.Cluster_LEAST_REQUEST,
+		},
+		{
+			name:   "least request defaults",
 			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST, warmup(nil, nil), nil),
 			wantLB: cluster.Cluster_LEAST_REQUEST,
+			wantLR: &cluster.Cluster_LeastRequestLbConfig{SlowStartConfig: modern(1, 10).SlowStartConfig},
+		},
+		{
+			name: "least request explicit parameters",
+			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST,
+				warmup(wrapperspb.Double(0.01), wrapperspb.Double(2.5)), nil),
+			wantLB: cluster.Cluster_LEAST_REQUEST,
+			wantLR: &cluster.Cluster_LeastRequestLbConfig{SlowStartConfig: modern(0.01, 2.5).SlowStartConfig},
+		},
+		{
+			name: "least request explicit zero minimum",
+			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST,
+				warmup(nil, wrapperspb.Double(0)), nil),
+			wantLB: cluster.Cluster_LEAST_REQUEST,
+			wantLR: &cluster.Cluster_LeastRequestLbConfig{SlowStartConfig: modern(1, 0).SlowStartConfig},
+		},
+		{
+			name:   "least request legacy duration",
+			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST, nil, durationpb.New(5*time.Second)),
+			wantLB: cluster.Cluster_LEAST_REQUEST,
+			wantLR: &cluster.Cluster_LeastRequestLbConfig{
+				SlowStartConfig: &cluster.Cluster_SlowStartConfig{
+					SlowStartWindow: durationpb.New(5 * time.Second),
+				},
+			},
+		},
+		{
+			name: "least request modern warmup takes precedence",
+			policy: simple(networking.LoadBalancerSettings_LEAST_REQUEST,
+				warmup(nil, nil), durationpb.New(5*time.Second)),
+			wantLB: cluster.Cluster_LEAST_REQUEST,
+			wantLR: &cluster.Cluster_LeastRequestLbConfig{SlowStartConfig: modern(1, 10).SlowStartConfig},
 		},
 		{
 			name:            "warmup and circuit breaker are both emitted",
@@ -380,6 +418,9 @@ func TestApplyTrafficPolicyWarmup(t *testing.T) {
 			}
 			if got := c.GetRoundRobinLbConfig(); !proto.Equal(got, tt.wantRR) {
 				t.Errorf("round robin config: got %v, want %v", got, tt.wantRR)
+			}
+			if got := c.GetLeastRequestLbConfig(); !proto.Equal(got, tt.wantLR) {
+				t.Errorf("least request config: got %v, want %v", got, tt.wantLR)
 			}
 			if tt.wantMaxRequests == 0 {
 				if c.CircuitBreakers != nil {

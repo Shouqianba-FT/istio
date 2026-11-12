@@ -3607,9 +3607,8 @@ func TestValidateLoadBalancerWarmup(t *testing.T) {
 	}{
 		{name: "omitted aggression"},
 		{name: "negative aggression", aggression: wrapperspb.Double(-0.1), wantError: true},
-		// The webhook intentionally accepts zero; the CRD enforces minimum 0.01.
-		{name: "zero aggression", aggression: wrapperspb.Double(0)},
-		{name: "below CRD minimum", aggression: wrapperspb.Double(0.005)},
+		{name: "zero aggression", aggression: wrapperspb.Double(0), wantError: true},
+		{name: "below CRD minimum", aggression: wrapperspb.Double(0.005), wantError: true},
 		{name: "CRD minimum", aggression: wrapperspb.Double(0.01)},
 		{name: "fractional aggression", aggression: wrapperspb.Double(0.5)},
 		{name: "default aggression", aggression: wrapperspb.Double(1)},
@@ -3625,7 +3624,7 @@ func TestValidateLoadBalancerWarmup(t *testing.T) {
 			if (got.Err != nil) != tt.wantError {
 				t.Fatalf("got error %v, want error: %v", got.Err, tt.wantError)
 			}
-			if tt.wantError && !strings.Contains(got.Err.Error(), "aggression should be greater than 0") {
+			if tt.wantError && !strings.Contains(got.Err.Error(), "aggression should be greater than or equal to 0.01") {
 				t.Fatalf("unexpected aggression error: %v", got.Err)
 			}
 		})

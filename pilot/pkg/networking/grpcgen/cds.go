@@ -232,6 +232,13 @@ func (b *clusterBuilder) applyLoadBalancing(c *cluster.Cluster, policy *networki
 		applyRoundRobinLoadBalancer(c, lb)
 	case networking.LoadBalancerSettings_LEAST_REQUEST:
 		c.LbPolicy = cluster.Cluster_LEAST_REQUEST
+		if lb.GetWarmup() != nil || lb.GetWarmupDurationSecs() != nil {
+			c.LbConfig = &cluster.Cluster_LeastRequestLbConfig_{
+				LeastRequestLbConfig: &cluster.Cluster_LeastRequestLbConfig{
+					SlowStartConfig: setSlowStartConfig(lb),
+				},
+			}
+		}
 	default:
 		log.Warnf("cannot apply LbPolicy %s to %s", lb.GetSimple(), b.node.ID)
 	}
@@ -248,7 +255,7 @@ func applyRoundRobinLoadBalancer(c *cluster.Cluster, loadbalancer *networking.Lo
 	}
 }
 
-// setSlowStartConfig will set warmup configuration for ROUND_ROBIN if provided in DestinationRule.
+// setSlowStartConfig will set warmup configuration for ROUND_ROBIN and LEAST_REQUEST if provided in DestinationRule.
 func setSlowStartConfig(loadbalancer *networking.LoadBalancerSettings) *cluster.Cluster_SlowStartConfig {
 	if warmup := loadbalancer.GetWarmup(); warmup != nil {
 		aggression := 1.0
